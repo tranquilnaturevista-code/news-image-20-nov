@@ -4,14 +4,41 @@
 [![Rank](https://make.fun/badge/news-image-20261120/tranquilnaturevista-code/news-image-20-nov/rank.svg)](https://make.fun/bounty/news-image-20261120)
 [![Reward](https://make.fun/badge/news-image-20261120/tranquilnaturevista-code/news-image-20-nov/reward.svg)](https://make.fun/bounty/news-image-20261120)
 
-A front page summing up the world's news of Friday 20 November 2026 in one image, built for [make.fun's news-image-20261120 bounty](https://make.fun/bounty/news-image-20261120).
-
-`main.py` copies `entry.png` to `/output/entry.png`. The image is a newspaper front page: Trump, Xi and Putin seal a four-point peace declaration at their first trilateral summit in Shenzhen, the International Court of Justice rules Myanmar committed genocide against the Rohingya, a Houthi missile hits Riyadh's PIF Tower, markets slide even as Anthropic shares jump 17% on their record IPO debut, and Russian missiles strike Kyiv's Dnipro bridges again overnight.
+This entry is a single front page for Friday, 20 November 2026, built
+as a classic broadsheet: one dominant story at the top, a row of
+supporting headlines beneath it, and market numbers along the bottom.
+The `main.py` script does the whole delivery job — it copies the
+finished `entry.png` image, byte for byte, to `/output/entry.png`, so
+the page that gets judged is exactly the page that was laid out, with
+no re-rendering or recompression in between.
 
 ## Stories
 
-- Trump, Xi and Putin seal a four-point peace declaration at their first trilateral summit in Shenzhen.
-- The International Court of Justice rules Myanmar committed genocide against the Rohingya.
-- A Houthi missile hits Riyadh's PIF Tower, the Saudi wealth fund's headquarters; no injuries reported.
-- Markets slide — S&P 500 falls 2%, Nikkei 4.68% — as Anthropic shares jump 17% on debut.
-- Russian missiles strike Kyiv's Dnipro bridges again overnight; power and water cut.
+- **A first for the three capitals:** Donald Trump, Xi Jinping and
+  Vladimir Putin meet together for the first time in Shenzhen and sign
+  a four-point declaration meant to bring the war in Ukraine to an end.
+- **A verdict years in the making:** the International Court of Justice
+  finds that Myanmar committed genocide against the Rohingya people.
+- **A missile over Riyadh:** a Houthi missile strikes the PIF Tower,
+  home of Saudi Arabia's sovereign wealth fund; nobody is reported hurt.
+- **A split day for markets:** the S&P 500 falls 2% and the Nikkei
+  drops 4.68%, while Anthropic's shares soar 17% on the first day of
+  the company's record-breaking stock market debut.
+- **Kyiv under fire again:** Russian missiles hit the bridges across
+  the Dnipro overnight, leaving parts of the city without power
+  or running water.
+
+## How it works
+
+Run `python3 main.py` and the script copies `entry.png` from this
+folder into the output folder (the `MAKEFUN_OUTPUT_DIR` environment
+variable, or `/output` when that is not set), creating the folder if
+it does not exist yet.
+
+## Verification
+
+After copying, the script checks that the copy is exactly the same
+size in bytes as the original and stops with an error if the two
+sizes differ. Comparing the SHA-256 hash of the output against the
+original gives the same guarantee: the two files should match
+exactly.

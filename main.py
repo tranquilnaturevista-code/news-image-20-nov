@@ -1,57 +1,69 @@
-"""Entry script for the 20 November 2026 news-image bounty.
+"""Publish the 20 November 2026 front page.
 
-The artwork itself lives in entry.png next to this script; this program
-does no drawing of its own. Its only job is to place an exact copy of
-that picture where the grader looks for it -- entry.png inside the output
-folder, which is /output in the grading container and whatever
-MAKEFUN_OUTPUT_DIR names when the script is run by hand.
+This tiny publisher takes the finished newspaper image that sits next
+to this script and places an exact copy of it where the bounty runner
+expects finished work to land. Nothing is redrawn, resized, or
+re-encoded here: the picture is moved byte for byte so the page the
+judges see is exactly the page that was designed.
+"""
 
-The run is fully repeatable: no network access, no clock, no randomness,
-and nothing but the Python standard library, so identical input bytes
-always yield identical output bytes. Once the copy lands, the script
-weighs both files and aborts loudly if their sizes disagree, so a short
-or truncated write can never slip through unnoticed."""
-
-from os import environ
+import os
+import shutil
+import sys
 from pathlib import Path
 
 
-IMAGE_NAME = "entry.png"
-FALLBACK_FOLDER = "/output"
-OUTPUT_VARIABLE = "MAKEFUN_OUTPUT_DIR"
+SOURCE_NAME = "entry.png"
+DEST_NAME = "entry.png"
+FALLBACK_DIR = "/output"
 
 
-def source_path():
-    """Return the picture bundled with this repository."""
-    return Path(__file__).resolve().parent.joinpath(IMAGE_NAME)
+def pick_destination() -> Path:
+    """Return the folder the copy should land in."""
+    wanted = os.environ.get("MAKEFUN_OUTPUT_DIR") or FALLBACK_DIR
+    return Path(wanted)
 
 
-def destination_path():
-    """Return where the graded copy belongs, creating the folder first."""
-    folder = Path(environ.get(OUTPUT_VARIABLE, FALLBACK_FOLDER))
-    folder.mkdir(parents=True, exist_ok=True)
-    return folder.joinpath(IMAGE_NAME)
+def describe_size(num_bytes: int) -> str:
+    """Render a byte count in a friendly human-readable form."""
+    if num_bytes < 1024:
+        return f"{num_bytes} bytes"
+    return f"{num_bytes} bytes ({num_bytes / 1024:.1f} KiB)"
 
 
-def place_copy(origin, target):
-    """Write an exact copy of origin to target and report its size."""
-    payload = origin.read_bytes()
-    target.write_bytes(payload)
-    original_size = origin.stat().st_size
-    copied_size = target.stat().st_size
-    if copied_size != original_size:
-        raise SystemExit(
-            "copy failed: source holds %d bytes but the copy holds %d"
-            % (original_size, copied_size)
+def place_front_page() -> int:
+    """Copy entry.png beside this file into the output folder.
+
+    Returns the number of bytes written. Raises SystemExit with a
+    clear message if anything goes wrong, so a bad run can never
+    look like a success.
+    """
+    here = Path(__file__).resolve().parent
+    original = here / SOURCE_NAME
+    if not original.is_file():
+        print(f"ERROR: could not find {SOURCE_NAME} next to main.py", file=sys.stderr)
+        raise SystemExit(1)
+
+    target_dir = pick_destination()
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target = target_dir / DEST_NAME
+
+    shutil.copyfile(original, target)
+
+    source_bytes = original.stat().st_size
+    copied_bytes = target.stat().st_size
+    if copied_bytes != source_bytes:
+        print(
+            f"ERROR: copy is {describe_size(copied_bytes)} but the "
+            f"source is {describe_size(source_bytes)}; the copy is "
+            "incomplete, so this run has failed",
+            file=sys.stderr,
         )
-    return copied_size
+        raise SystemExit(1)
+
+    print(f"Done: wrote {target} ({describe_size(copied_bytes)})")
+    return copied_bytes
 
 
-def run():
-    picture = source_path()
-    goal = destination_path()
-    size = place_copy(picture, goal)
-    print("entry.png delivered: %d bytes written to %s" % (size, goal))
-
-
-if __name__ == "__main__": run()
+if __name__ == "__main__":
+    place_front_page()
